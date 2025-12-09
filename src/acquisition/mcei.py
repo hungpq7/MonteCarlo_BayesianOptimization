@@ -118,3 +118,88 @@ class ExpectedImprovementTwoStepLookahead(qKnowledgeGradient):
         one_step_ei_avg = values.mean(dim=0)
 
         return zero_step_ei + one_step_ei_avg
+
+class qExpectedImprovementTwoStepLookahead(qMultiStepLookahead):
+
+    def __init__(
+            self,
+            model: Model,
+            batch_sizes: List[int],
+            num_fantasies: Optional[List[int]] = None,
+            samplers: Optional[List[MCSampler]] = None,
+            valfunc_cls: Optional[List[Optional[Type[AcquisitionFunction]]]] = [ExpectedImprovement,
+                                                                                qExpectedImprovement],
+            valfunc_argfacs: Optional[List[Optional[TAcqfArgConstructor]]] = [make_best_f, make_best_f],
+            objective: Optional[MCAcquisitionObjective] = None,
+            posterior_transform: Optional[PosteriorTransform] = None,
+            inner_mc_samples: Optional[List[int]] = None,
+            X_pending: Optional[Tensor] = None,
+            collapse_fantasy_base_samples: bool = True,
+            antithetic_variates=False,
+            num_samples=512,
+            num_samples_inner=512
+    ) -> None:
+        inner_samplers = [None, IIDNormalSampler(sample_shape=torch.Size([num_samples]), resample=False)]
+
+        if objective is not None and not isinstance(objective, MCAcquisitionObjective):
+            raise UnsupportedError(
+                "`qMultiStepLookahead` got a non-MC `objective`. This is not supported."
+                " Use `posterior_transform` and `objective=None` instead."
+            )
+
+        super(MCAcquisitionFunction, self).__init__(model=model)
+        self.batch_sizes = batch_sizes
+        if samplers is None:
+            samplers = [IIDNormalSampler(sample_shape=torch.Size([num_samples]), resample=False)]
+        if not ((num_fantasies is None) ^ (samplers is None)):
+            raise UnsupportedError(
+                "qMultiStepLookahead requires exactly one of `num_fantasies` or "
+                "`samplers` as arguments."
+            )
+        num_fantasies = [sampler.sample_shape[0] for sampler in samplers]
+        self.num_fantasies = num_fantasies
+        if antithetic_variates:
+            valfunc_cls = [ExpectedImprovement, qExpectedImprovementAnt]
+        if inner_mc_samples is None:
+            inner_mc_samples = [None] * (1 + len(num_fantasies))
+        if valfunc_argfacs is None:
+            valfunc_argfacs = [None] * (1 + len(batch_sizes))
+
+        self.objective = objective
+        self.posterior_transform = posterior_transform
+        self.set_X_pending(X_pending)
+        self.samplers = ModuleList(samplers)
+        self.inner_samplers = ModuleList(inner_samplers)
+        self._valfunc_cls = valfunc_cls
+        self._valfunc_argfacs = valfunc_argfacs
+        self._collapse_fantasy_base_samples = collapse_fantasy_base_samples
+
+
+def _split_fantasy_points(X: Tensor, n_f: int) -> Tuple[Tensor, Tensor]:
+    r"""Split a one-shot optimization input into actual and fantasy points
+
+    Args:
+        X: A `batch_shape x (q + n_f) x d`-dim tensor of actual and fantasy
+            points
+
+    Returns:
+        2-element tuple containing
+
+        - A `batch_shape x q x d`-dim tensor `X_actual` of input candidates.
+        - A `n_f x batch_shape x 1 x d`-dim tensor `X_fantasies` of fantasy
+            points, where `X_fantasies[i, batch_idx]` is the i-th fantasy point
+            associated with the batch indexed by `batch_idx`.
+    """
+    if n_f > X.size(-2):
+        raise ValueError(
+            f"n_f ({n_f}) must be less than the q-batch dimension of X ({X.size(-2)})"
+        )
+    split_sizes = [X.size(-2) - n_f, n_f]
+    X_actual, X_fantasies = torch.split(X, split_sizes, dim=-2)
+    # X_fantasies is b x num_fantasies x d, needs to be num_fantasies x b x 1 x d
+    # for batch mode evaluation with batch shape num_fantasies x b.
+    # b x num_fantasies x d --> num_fantasies x b x d
+    X_fantasies = X_fantasies.permute(-2, *range(X_fantasies.dim() - 2), -1)
+    # num_fantasies x b x 1 x d
+    X_fantasies = X_fantasies.unsqueeze(dim=-2)
+    return X_actual, X_fantasies

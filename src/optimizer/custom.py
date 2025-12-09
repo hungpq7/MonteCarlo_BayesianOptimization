@@ -3,7 +3,10 @@ import torch
 torch.set_default_dtype(torch.double)
 
 from .base import BaseOptimizer
-from ..acquisition.mcei import ExpectedImprovementTwoStepLookahead, qExpectedImprovementTwoStepLookahead
+from ..acquisition.mcei import (
+    ExpectedImprovementTwoStepLookahead,
+    qExpectedImprovementTwoStepLookahead,
+)
 
 class EITwoStepMCOptimizer(BaseOptimizer):
     def gen_new_candidate(self, model, best_f, **kwargs):
