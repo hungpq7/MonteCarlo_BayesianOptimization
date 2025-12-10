@@ -66,8 +66,8 @@ class BaseOptimizer:
         x_train, y_train = self.gen_initial_data(self.n_init, self.dim)
         model, mll, state_dict = self.fit_model(x_train, y_train)
 
-        candidates = kwargs.get('candidates', 1)
-        n_iter = (self.max_iter - self.n_init) // candidates
+        q = kwargs.get('q', 1)
+        n_iter = (self.max_iter - self.n_init) // q
 
         for i in range(n_iter):
             best_f = y_train.max().item()

@@ -27,11 +27,11 @@ class qEIOptimizer(BaseOptimizer):
     def gen_new_candidate(self, model, best_f, **kwargs):
         acqf = qExpectedImprovement(model=model, best_f=best_f, maximize=True)
 
-        candidates = kwargs.get('candidates', 5)
+        q = kwargs.get('q', 5)
         x_new, _ = optimize_acqf(
             acq_function=acqf,
             bounds=self.bounds,
-            q=candidates,
+            q=q,
             num_restarts=30,
             raw_samples=100,
         )
@@ -43,11 +43,11 @@ class qLogEIOptimizer(BaseOptimizer):
     def gen_new_candidate(self, model, best_f, **kwargs):
         acqf = qLogExpectedImprovement(model=model, best_f=best_f)
 
-        candidates = kwargs.get('candidates', 5)
+        q = kwargs.get('q', 5)
         x_new, _ = optimize_acqf(
             acq_function=acqf,
             bounds=self.bounds,
-            q=candidates,
+            q=q,
             num_restarts=10,
             raw_samples=128,
         )
