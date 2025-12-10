@@ -34,3 +34,4 @@
     - Đối với EI thông thường: mỗi iteration ứng với một function call. Đối với qEI và các biến thể dùng batch, một iteration tối ưu cho q điểm và ứng với q function calls.
     - Mỗi candidate được lặp lại 10 lần chạy, lấy mean và variance để so sánh.
     - Tiêu chí: giá trị tối ưu tìm được và thời gian chạy.
+    - Cấu hình:
