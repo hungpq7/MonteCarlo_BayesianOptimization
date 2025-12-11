@@ -22,22 +22,32 @@
 
 ## Acquisition functions
 - BoTorch có sẵn rất nhiều acquisition functions, gồm 2 nhóm analytical như EI, PI, UCB và approximation như qEI, qLogEI. Nhóm analytic có dạng toán học cụ thể và tính được bằng các phép tính đại số thông thường. Nhóm approximation cần simulation mới tính được do tính chất phức tạp.
-- Paper MLMCBO giới thiệu một kỹ thuật xây acquisition function mới. Việc này thực hiện bằng cách inherit base class trong BoTorch và viết lại hàm `forward` để tính acquisition value.
+- Paper MLMCBO giới thiệu kỹ thuật xây acquisition function EI mới. Việc này thực hiện bằng cách inherit base class trong BoTorch và viết lại hàm `forward` để tính acquisition value.
 
-## Experiment
+## Experiment setup
 - So sánh các candidate sau:
-    - Analytical EI
-    - qEI
-    - qLogEI
-    - Nested MC Two-step EI
-    - MLMC Two-step EI
-    - MLMC Three-step EI
+    - Random Search: hoàn toàn không dùng BO, là baseline tốt với tốc độ nhanh
+    - Analytical EI: phiên bản Expected Improvement truyền thống
+    - qEI: thực hiện BO loop theo batch q points, hy sinh độ chính xác đổi lấy thời gian nhanh hơn
+    - qLogEI: biến thể của qEI giảm sai số tính toán nhờ đó cải thiện độ chính xác, nhưng chậm hơn đáng kể
+    - Nested MC Two-step EI: baseline implementation cho các chiến lược lookahead EI, loại khỏi benchmark do chạy quá chậm.
+    - MLMC Two-step EI: phương pháp đuược đề xuất trong paper cho two-step lookahead EI.
+    - MLMC Three-step EI:  phương pháp đuược đề xuất trong paper cho two-step lookahead EI.
 - Benchmark:
-    - Các hàm benchmark chuyên cho các kỹ thuật optimization, có thể tuỳ chỉnh số chiều, evaluate nhanh và đã biết trước nghiệm tối ưu
-    - Thực tế ML model.
+    - Các hàm benchmark chuyên cho các kỹ thuật optimization, evaluate nhanh và đã biết trước nghiệm tối ưu. Reproduce sẽ chọn cấu hình số chiều cho các hàm này khác so với kết quả trong paper.
+        - [Branin](https://www.sfu.ca/~ssurjano/branin.html) (d=2)
+        - [EggHolder](https://www.sfu.ca/~ssurjano/egg.html) (d=2)
+        - [Ackley](https://www.sfu.ca/~ssurjano/ackley.html) (d=4).
+        - [Hartmann](https://www.sfu.ca/~ssurjano/hart6.html) (d=6)
+    - ML algorithms chạy trên dataset thực tế
+        - Breast cancer classification with Support Vector Machines
+        - Wine quality regression with Randomn Forest
+        - Wine classification with Multi-layer Perceptron
 - Design:
     - Một lần chạy của mỗi candidate được cấp tối đa 50 lần gọi hàm `f`. Trong đó, 10 lần call được dùng cho initialization.
     - Đối với EI thông thường: mỗi iteration ứng với một function call. Đối với qEI và các biến thể dùng batch, một iteration tối ưu cho q điểm và ứng với q function calls.
     - Mỗi candidate được lặp lại 10 lần chạy, lấy mean và variance để so sánh.
     - Tiêu chí: giá trị tối ưu tìm được và thời gian chạy.
     - Cấu hình: DataBricks instance 4 CPU & 16GB Memmory
+
+## Experiment results
