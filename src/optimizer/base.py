@@ -29,7 +29,10 @@ class BaseOptimizer:
         self.max_iter = max_iter
 
     def gen_initial_data(self, size, dim):
-        x_train = torch.rand(size, dim, dtype=torch.double)
+        x_unit = torch.rand(size, dim, dtype=torch.double)
+        lb = self.bounds[0]
+        ub = self.bounds[1]
+        x_train = lb + (ub - lb) * x_unit
         y_train = self.blackbox(x_train).unsqueeze(-1)
         return x_train, y_train
 
@@ -56,7 +59,10 @@ class BaseOptimizer:
         return model, mll, new_state_dict
     
     def gen_new_candidate(self, model, best_f, **kwargs):
-        x_new = torch.rand(1, self.dim, dtype=torch.double)
+        x_unit = torch.rand(1, self.dim, dtype=torch.double)
+        lb = self.bounds[0]
+        ub = self.bounds[1]
+        x_new = lb + (ub - lb) * x_unit
         y_new = self.blackbox(x_new).unsqueeze(-1)
         return x_new, y_new
     
@@ -82,7 +88,7 @@ class BaseOptimizer:
             if print_every > 0:
                 if (i+1) % print_every == 0:
                     y_best = y_train.max().item()
-                    print(f"Iter {i+1} | Current best: {y_best:.4f}")
+                    print(f"Iter {i+1} | Current best: {y_best:.6f}")
 
         y_best = y_train.max().item()
         duration = time.time() - start
