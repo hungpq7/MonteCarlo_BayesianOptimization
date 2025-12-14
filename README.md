@@ -32,7 +32,7 @@
 - *qLogEI*: biến thể của qEI giảm sai số tính toán nhờ đó cải thiện độ chính xác, nhưng chậm hơn đáng kể
 - *Nested MC Two-step EI*: baseline implementation cho các chiến lược lookahead EI, loại khỏi benchmark do chạy quá chậm.
 - *MLMC Two-step EI*: phương pháp đuược đề xuất trong paper cho two-step lookahead EI.
-- *MLMC Three-step EI*:  phương pháp đuược đề xuất trong paper cho two-step lookahead EI.
+- *MLMC Three-step EI*: phương pháp đuược đề xuất trong paper cho two-step lookahead EI.
 ### 4.2. Benchmark
 - Các hàm benchmark chuyên cho các kỹ thuật optimization, evaluate nhanh và đã biết trước nghiệm tối ưu. Reproduce sẽ chọn cấu hình số chiều cho các hàm này khác so với kết quả trong paper.
     - [Branin](https://www.sfu.ca/~ssurjano/branin.html) (d=2)
@@ -63,17 +63,12 @@
 - Tuy nhiên khi thử nghiệm với các phương pháp cần tính toán nặng, dùng Monte-Carlo nhiều; nếu chạy song song sẽ chậm hơn đáng kể. Do vậy setup thí nghiệm sẽ quay về **chạy tuần tự**.
 - Ban đầu nhóm không đựa **Random Search** vào danh sách so sánh vì cho rằng nó quá đơn giản. Tuy nhiên sau khi chạy thử nghiệm, nhóm nhận thấy Random Search có kết quả chấp nhận được trong thời gian cực ngắn. Do vậy Random Search được thêm vào bảng kết quả để làm baseline.
 - Có 2 ứng viên không chạy thành công trên một số bài toán benchmark do tốn quá nhiều thời gian: Nested MC Two-step EI và MLMC Three-step EI. Nguyên nhân chính là do việc tính toán Monte-Carlo quá nặng nề. Do vậy hai ứng viên này bị loại khỏi bảng kết quả cuối cùng.
-- Ngay cả MLMC Two-step EI không hoàn thành một số bài test (bị dừng trước khi chạy đủ 10 runs) do tốn quá nhiều thời gian. Cụ thể:
-    - EggHolder: Sau 4 giờ chạy mới finish run #1, kết quả 716
-    - Hartmann: Sau 1 giờ mới finish run #2, kết quả 2.77
-    - ElasticNet: Sau 1.5 giờ mới finish run #1, kết quả 69.007
 
 ### 5.2. Kết luận
 - qLogEI là phương pháp tốt nhất, thể hiện ở việc một số bài toán thậm chí đã tiệm cận global maximum hay bỏ xa các ứng viên. Thời gian chạy tuy chậm hơn EI hay qEI nhưng hoàn toàn đủ nhanh.
-- MLMC Two-step EI không thể hiện được ưu điểm như kỳ vọng trong paper dù ở khía cạnh độ chính xác hay thời gian chạy. Nguyên nhân có thể do việc implement chưa tối ưu.
 - qEI chính xác hơn EI và chậm hơn; kết quả này có vẻ ngược với lý thuyết.
-- Nếu bạn muốn phương pháp nhanh với độ chính xác vừa đủ, hãy chọn EI.
-- Nếu muốn độ chính xác cao với thời gian chấp nhận được, hãy chọn qLogEI.
+- Nếu bạn muốn phương pháp nhanh với độ chính xác vừa đủ, hãy chọn EI. Nếu muốn độ chính xác cao với thời gian chấp nhận được, hãy chọn qLogEI.
+- MLMC Two-step EI có độ chính xác khá cạnh tranh, tuy nhiên thời gian chạy khá lâu. 
 - Paper đã cung cấp một hướng đi mới mẻ trong việc xây dựng acquisition function cho Bayesian Optimization. Tuy nhiên để áp dụng rộng rãi trong thực tế, cần có thêm các nghiên cứu để tối ưu việc tính toán Monte-Carlo nhằm giảm thời gian chạy.
 - Phạm vi của paper gói gọn trong EI acquisition function. Lĩnh vực derivative-free optimization còn rất nhiều khía cạnh như:
     - Các acquisition function khác (PI, UCB, etc)
