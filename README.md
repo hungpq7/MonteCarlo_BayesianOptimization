@@ -45,7 +45,7 @@
 ### 4.3. Experiment configuration
 - Một lần chạy của mỗi candidate được cấp **tối đa 50 lần gọi hàm** `f`. Trong đó, 10 lần call được dùng cho initialization. Chú ý: Đối với EI thông thường: mỗi iteration ứng với một function call. Đối với qEI và các biến thể dùng batch, một iteration tối ưu cho q điểm và ứng với q function calls.
 - Mỗi candidate được lặp lại **10 runs**, lấy median nghiệm tối ưu và thời gian chạy để so sánh.
-- Thời gian tối đa cho mỗi run của mỗi candidate là **10 phút**, gấp ít nhất 200 lần baseline. Nếu vượt quá sẽ bị dừng và không tính kết quả.
+- Thời gian tối đa cho mỗi run của mỗi candidate là **10 phút**, gấp ~ 200 lần baseline. Nếu vượt quá sẽ bị dừng và không tính kết quả.
 - Cấu hình: DataBricks instance 4 CPU & 16GB Memmory
 
 # 5. Experiment results
